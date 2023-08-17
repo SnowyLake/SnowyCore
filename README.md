@@ -1,2 +1,2 @@
 # SnowyCore
-Common library I developed for my projects.
+My C++ base library.
