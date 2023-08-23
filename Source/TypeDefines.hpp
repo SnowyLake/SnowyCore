@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <memory>
 #include <string>
+#include <span>
 #include <type_traits>
 
 #include "Platform.hpp"
