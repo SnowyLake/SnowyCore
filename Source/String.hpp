@@ -18,10 +18,12 @@
 #define WIDE_TEXT(x) L ## x
 
 // Utf-8 Support
+#define UTF8_TEXT_CXX20(x) reinterpret_cast<const char*>(u8 ## x)
+#define UTF8_TEXT_LEGACY(x) u8 ## x
 #if _MSVC_LANG >= 202002L	/*CXX20*/
-#define UTF8_TEXT(x) reinterpret_cast<const char*>(u8 ## x)
+#define UTF8_TEXT(x) UTF8_TEXT_CXX20(x)
 #else	
-#define UTF8_TEXT(x) u8 ## x
+#define UTF8_TEXT(x) UTF8_TEXT_LEGACY(x)
 #endif  // _MSVC_LANG >= 202002L
 
 // Utf-16 Support
@@ -57,18 +59,23 @@ struct StringConvertor
         delete[] buffer;
         return wStr;
     }
-    template<bool OutputStdU8String = false>
-    static auto WideToUtf8(WideStringIn wStr) -> std::conditional_t<OutputStdU8String, Utf8String, AnsiString>
+    static AnsiString WideToUtf8(WideStringIn wStr)
     {
-
+        if constexpr (g_SCharCodeIsUtf16)
+        {
+            std::u16string tempStr(reinterpret_cast<const char16_t*>(wStr.data()));
+            return utf8::utf16to8(tempStr);
+        } else
+        {
+            std::u32string tempStr(reinterpret_cast<const char32_t*>(wStr.data()));
+            return utf8::utf32to8(tempStr);
+        }
     }
-    template<bool OutputStdU8String = false>
-    static auto AnsiToUtf8(AnsiStringIn aStr) -> std::conditional_t<OutputStdU8String, Utf8String, AnsiString>
+    static AnsiString AnsiToUtf8(AnsiStringIn aStr)
     {
-
+        auto tempStr = AnsiToWide(aStr);
+        return WideToUtf8(tempStr);
     }
-private:
-    //static std::wstring_convert<std::codecvt_utf8<wchar_t>> strCnv;
 };
 #define WIDE_TO_ANSI(x) StringConvertor::WideToAnsi(x)
 #define ANSI_TO_WIDE(x) StringConvertor::AnsiToWide(x)
@@ -77,91 +84,126 @@ private:
 #if defined(SNOWY_CORE_CHAR_WIDE)
     #define WIDE_TO_SSTR(x) x
     #define ANSI_TO_SSTR(x) StringConvertor::AnsiToWide(x)
+    #define SSTR_TO_WIDE(x) x
+    #define SSTR_TO_ANSI(x) StringConvertor::WideToAnsi(x)
+    #define SSTR_TO_UTF8(x) StringConvertor::WideToUtf8(x)
 #else
     #define WIDE_TO_SSTR(x) StringConvertor::WideToAnsi(x)
     #define ANSI_TO_SSTR(x) x
+    #define SSTR_TO_WIDE(x) StringConvertor::AnsiToWide(x)
+    #define SSTR_TO_ANSI(x) x
+    #define SSTR_TO_UTF8(x) StringConvertor::AnsiToUtf8(x)
 #endif // defined(SNOWY_CORE_CHAR_WIDE)
 
 /// <summary>
 /// SnowyCore's custom string tools.
 /// </summary>
-class StringUtils
+struct StringUtils
 {
-
+    template<typename T>
+    static SString ToSString(T&& val)
+    {
+        if constexpr (g_SCharTypeIsWChar)
+        {
+            return std::to_wstring(std::forward<T>(val));
+        } else
+        {
+            return std::to_string(std::forward<T>(val));
+        }
+    }
 };
 
 /// <summary>
-/// SnowyCore's custom string class, which is std::string proxy class and add utf-8 support.
+/// SnowyCore's custom string wrapper, which is proxy class for string, default is std::string or std::wstring.
 /// </summary>
-template<typename SType>
+/// <typeparam name="S"> String Type </typeparam>
+/// <typeparam name="V"> String View Type </typeparam>
+template<typename StrT, typename ViewT>
 class TStringWrapper
 {
 public:
-    using WrappedType = SType;
+    using StringType = StrT;
+    using StringViewType = ViewT;
 
 private:
-    WrappedType m_Data;
+    StringType m_Data;
 
 public:
     TStringWrapper() = default;
-    TStringWrapper(const WrappedType& data) : m_Data(data) {}
-    TStringWrapper(WrappedType&& data) : m_Data(std::forward<WrappedType>(data)) {}
-    TStringWrapper& operator=(const WrappedType& data) { m_Data = data; return *this; }
-    TStringWrapper& operator=(WrappedType&& data) { m_Data = std::forward<WrappedType>(data); return *this; }
+    TStringWrapper(const StringType& data) : m_Data(data) {}
+    TStringWrapper(StringType&& data) : m_Data(std::forward<StringType>(data)) {}
+    TStringWrapper& operator=(const StringType& data) { m_Data = data; return *this; }
+    TStringWrapper& operator=(StringType&& data) { m_Data = std::forward<StringType>(data); return *this; }
 
     bool operator==(const TStringWrapper& other) const { return m_Data == other.m_Data; }
 
-    operator std::string() const { return m_Data; }
-    operator std::string_view() const { return m_Data; }
+    operator StringType() const { return m_Data; }
+    operator StringViewType() const { return m_Data; }
 
-    WrappedType& Get() { return m_Data; }
-    WrappedType& operator*() { return m_Data; }
-    WrappedType* operator->() { return &m_Data; }
+    StringType& Get() { return m_Data; }
+    StringType& operator*() { return m_Data; }
+    StringType* operator->() { return &m_Data; }
+    const StringType& Get() const { return m_Data; }
+    const StringType& operator*() const { return m_Data; }
+    const StringType* operator->() const { return &m_Data; }
 public:
     // TODO: String Common Method
 };
 // Default StringWrapper
-using StringWrapper = TStringWrapper<SString>;
+using SStringWrapper = TStringWrapper<SString, SStringIn>;
+
 
 // Text Localized
+// TODO: Move it out of SnowyCore?
 // ---------------------------------
 
-enum class ELocaleType
-{
-    English = 0,
-    Chinese
-};
-
-/// <summary>
-/// Localized string, english and chinese
-/// </summary>
-class LocaleText
-{
-public:
-    static ELocaleType CurrentLocale;
-
-private:
-    std::unordered_map<ELocaleType, StringWrapper> m_LocaleText;
-};
+//enum class ELocaleType
+//{
+//    English = 0,
+//    Chinese
+//};
+//
+///// <summary>
+///// Localized string, english and chinese
+///// </summary>
+//class LocaleText
+//{
+//public:
+//    static ELocaleType CurrentLocale;
+//
+//private:
+//    std::unordered_map<ELocaleType, SStringWrapper> m_LocaleText;
+//};
 
 /// <summary>
 /// Fixed String, can use for template param.
 /// </summary>
-template<size_t N>
+template<typename CharT, size_t N>
 struct FixedString
 {
-    char buffer[N + 1]{};
-    constexpr FixedString(const char* s)
+    using CharType = CharT;
+    constexpr static std::size_t Length = N;
+
+    CharT buffer[Length + 1]{};
+    constexpr FixedString(const CharType* chars)
     {
-        for (size_t i = 0; i != N; ++i)
+        for (size_t i = 0; i != Length; ++i)
         {
-            buffer[i] = s[i];
+            buffer[i] = chars[i];
         }
     }
-    constexpr operator const char* () const { return buffer; }
-
-    // not mandatory anymore
+    constexpr operator const CharT* () const { return buffer; }
     auto operator<=>(const FixedString&) const = default;
 };
-template<size_t N> FixedString(const char(&)[N]) -> FixedString<N - 1>;
+template<typename CharT, size_t N> FixedString(const CharT(&)[N]) -> FixedString<CharT, N - 1>;
+
+template<FixedString Str>
+constexpr auto operator""_fix()
+{
+    return Str;
+}
+#define WIDE_FIXED(x)  (WIDE_TEXT(x)        ## _fix)
+#define UTF8_FIXED(x)  (UTF8_TEXT_LEGACY(x) ## _fix)
+#define UTF16_FIXED(x) (UTF16_TEXT(x)       ## _fix)
+#define UTF32_FIXED(x) (UTF32_TEXT(x)       ## _fix)
 }
