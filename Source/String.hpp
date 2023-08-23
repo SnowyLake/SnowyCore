@@ -6,9 +6,7 @@
 #include "Platform.hpp"
 #include "TypeDefines.hpp"
 
-#if defined(_WIN32)
-#define UTF_CPP_CPLUSPLUS _MSVC_LANG
-#endif
+#define UTF_CPP_CPLUSPLUS SNOWY_CXX_VERSION
 #include "../ThirdParty/utf8/utf8.h"
 
 // ANSI Support
@@ -20,7 +18,7 @@
 // Utf-8 Support
 #define UTF8_TEXT_CXX20(x) reinterpret_cast<const char*>(u8 ## x)
 #define UTF8_TEXT_LEGACY(x) u8 ## x
-#if _MSVC_LANG >= 202002L	/*CXX20*/
+#if SNOWY_CXX_VERSION >= 202002L	/*CXX20*/
 #define UTF8_TEXT(x) UTF8_TEXT_CXX20(x)
 #else	
 #define UTF8_TEXT(x) UTF8_TEXT_LEGACY(x)

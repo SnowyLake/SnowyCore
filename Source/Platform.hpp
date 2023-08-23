@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-// TODO: Multi Platform Support
 #if defined(_WIN32)
 #include <Windows.h>
+#define SNOWY_CXX_VERSION _MSVC_LANG
 #else
 #error "Platform is not support!"
 #endif // defined(_WIN32)
