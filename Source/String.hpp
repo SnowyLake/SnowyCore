@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "Platform.hpp"
-#include "TypeDefines.hpp"
+#include "Typedef.hpp"
 
 #define UTF_CPP_CPLUSPLUS SNOWY_CXX_VERSION
 #include "../ThirdParty/utf8/utf8.h"
