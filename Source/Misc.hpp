@@ -1,3 +1,3 @@
 #pragma once
 
-#define NameOf(x) #x
+#define SNameOf(x) #x

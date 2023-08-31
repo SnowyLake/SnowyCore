@@ -6,7 +6,7 @@
 
 #include "Platform.hpp"
 
-#define DecayedTypeOf(x) std::decay_t<decltype(x)>
+#define SDecayedTypeOf(x) std::decay_t<decltype(x)>
 
 namespace Snowy
 {
