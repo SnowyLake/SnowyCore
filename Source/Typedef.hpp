@@ -6,8 +6,6 @@
 
 #include "Platform.hpp"
 
-#define SDecayedTypeOf(x) std::decay_t<decltype(x)>
-
 namespace Snowy
 {
 // -------------------------------------------------------------
@@ -20,8 +18,8 @@ template<typename T> using SharedHandle = std::shared_ptr<T>;
 template<typename T> using WeakHandle = std::weak_ptr<T>;
 
 /// <summary>
-/// It is used only as a function argument to access an assigned object, should never be used to allocate object.
-/// If you want allocate ownless object, use RawHandle.
+/// It's a non-ownership handle, used only access an assigned but ownless memory, should never be used to allocate or release memory.
+/// If you want allocate ownless memory and release in time, use RawHandle.
 /// </summary>
 template<typename T> class ObserverHandle
 {
@@ -36,6 +34,8 @@ public:
     ObserverHandle(ElementType* ptr) noexcept : m_Ptr(ptr) {}
     ObserverHandle(const ObserverHandle&) = default;
     ObserverHandle(ObserverHandle&&) = default;
+    ObserverHandle& operator=(const ObserverHandle&) = default;
+    ObserverHandle& operator=(ObserverHandle&&) = default;
     template<class U> ObserverHandle(ObserverHandle<U> other) noexcept
         requires std::convertible_to<typename ObserverHandle<U>::ElementType*, ElementType*>
     : m_Ptr(other.Get())
