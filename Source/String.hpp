@@ -43,17 +43,17 @@ namespace Snowy
 /// </summary>
 struct StringConvertor
 {
-    static std::string WideToAnsi(WideStringIn wStr)
+    static AnsiString WideToAnsi(WideStringIn wStr)
     {
         AnsiChar* buffer = Platform::WideStringToAnsi(wStr.data(), static_cast<int>(wStr.size()));
-        std::string aStr(buffer);
+        AnsiString aStr(buffer);
         delete[] buffer;
         return aStr;
     }
-    static std::wstring AnsiToWide(AnsiStringIn aStr)
+    static WideString AnsiToWide(AnsiStringIn aStr)
     {
         WideChar* buffer = Platform::AnsiStringToWide(aStr.data(), static_cast<int>(aStr.size()));
-        std::wstring wStr(buffer);
+        WideString wStr(buffer);
         delete[] buffer;
         return wStr;
     }
@@ -61,11 +61,11 @@ struct StringConvertor
     {
         if constexpr (g_SCharCodeIsUtf16)
         {
-            std::u16string tempStr(reinterpret_cast<const char16_t*>(wStr.data()));
+            Utf16String tempStr(reinterpret_cast<const char16_t*>(wStr.data()));
             return utf8::utf16to8(tempStr);
         } else
         {
-            std::u32string tempStr(reinterpret_cast<const char32_t*>(wStr.data()));
+            Utf32String tempStr(reinterpret_cast<const char32_t*>(wStr.data()));
             return utf8::utf32to8(tempStr);
         }
     }

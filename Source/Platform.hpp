@@ -27,6 +27,20 @@ public:
         #error "Platform is not support!"
     #endif 
     }
+    static char* WideStringToUtf8(const wchar_t* wStr, const int wSize)
+    {
+    #if defined(_WIN32)
+        // 获取缓冲区大小，并申请空间，缓冲区大小按字节计算
+        int u8Size = WideCharToMultiByte(CP_UTF8, 0, wStr, wSize, NULL, 0, NULL, NULL);
+        char* buffer = new char[u8Size + 1];
+        // 宽字节编码转换成多字节编码
+        WideCharToMultiByte(CP_UTF8, 0, wStr, wSize, buffer, u8Size, NULL, NULL);
+        buffer[u8Size] = '\0';
+        return buffer;
+    #else
+        #error "Platform is not support!"
+    #endif 
+    }
     static wchar_t* AnsiStringToWide(const char* aStr, const int aSize)
     {
     #if defined(_WIN32)
@@ -42,6 +56,4 @@ public:
     #endif 
     }
 };
-
-
 }
