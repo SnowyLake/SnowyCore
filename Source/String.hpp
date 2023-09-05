@@ -75,22 +75,22 @@ struct StringConvertor
         return WideToUtf8(tempStr);
     }
 };
-#define WIDE_TO_ANSI(x) StringConvertor::WideToAnsi(x)
-#define ANSI_TO_WIDE(x) StringConvertor::AnsiToWide(x)
-#define WIDE_TO_UTF8(x) StringConvertor::WideToUtf8(x)
-#define ANSI_TO_UTF8(x) StringConvertor::AnsiToUtf8(x)
+#define WIDE_TO_ANSI(x) Snowy::StringConvertor::WideToAnsi(x)
+#define ANSI_TO_WIDE(x) Snowy::StringConvertor::AnsiToWide(x)
+#define WIDE_TO_UTF8(x) Snowy::StringConvertor::WideToUtf8(x)
+#define ANSI_TO_UTF8(x) Snowy::StringConvertor::AnsiToUtf8(x)
 #if defined(SNOWY_CORE_CHAR_WIDE)
     #define WIDE_TO_SSTR(x) x
-    #define ANSI_TO_SSTR(x) StringConvertor::AnsiToWide(x)
+    #define ANSI_TO_SSTR(x) Snowy::StringConvertor::AnsiToWide(x)
     #define SSTR_TO_WIDE(x) x
-    #define SSTR_TO_ANSI(x) StringConvertor::WideToAnsi(x)
-    #define SSTR_TO_UTF8(x) StringConvertor::WideToUtf8(x)
+    #define SSTR_TO_ANSI(x) Snowy::StringConvertor::WideToAnsi(x)
+    #define SSTR_TO_UTF8(x) Snowy::StringConvertor::WideToUtf8(x)
 #else
-    #define WIDE_TO_SSTR(x) StringConvertor::WideToAnsi(x)
+    #define WIDE_TO_SSTR(x) Snowy::StringConvertor::WideToAnsi(x)
     #define ANSI_TO_SSTR(x) x
-    #define SSTR_TO_WIDE(x) StringConvertor::AnsiToWide(x)
+    #define SSTR_TO_WIDE(x) Snowy::StringConvertor::AnsiToWide(x)
     #define SSTR_TO_ANSI(x) x
-    #define SSTR_TO_UTF8(x) StringConvertor::AnsiToUtf8(x)
+    #define SSTR_TO_UTF8(x) Snowy::StringConvertor::AnsiToUtf8(x)
 #endif // defined(SNOWY_CORE_CHAR_WIDE)
 
 /// <summary>
