@@ -43,7 +43,7 @@ public:
     ~ObserverHandle() = default;    // ObserverHandle has no ownership of the resource, so dtor do nothing.
 
     ElementType* operator->() const noexcept { return m_Ptr; }
-    ElementType& operator* () const { return *m_Ptr; }
+    ElementType& operator* () const noexcept { return *m_Ptr; }
     bool operator==(const ObserverHandle& other) const { return m_Ptr == other.m_Ptr; }
 
     operator bool() const noexcept { return m_Ptr != nullptr; }
