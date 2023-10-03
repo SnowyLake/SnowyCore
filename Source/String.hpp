@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <string>
-#include <codecvt>
+#include <filesystem>
 #include <unordered_map>
 
 #include "Platform.hpp"
@@ -85,12 +85,14 @@ struct StringConvertor
     #define SSTR_TO_WIDE(x) x
     #define SSTR_TO_ANSI(x) Snowy::StringConvertor::WideToAnsi(x)
     #define SSTR_TO_UTF8(x) Snowy::StringConvertor::WideToUtf8(x)
+    #define PATH_TO_SSTR(x) x.wstring()
 #else
     #define WIDE_TO_SSTR(x) Snowy::StringConvertor::WideToAnsi(x)
     #define ANSI_TO_SSTR(x) x
     #define SSTR_TO_WIDE(x) Snowy::StringConvertor::AnsiToWide(x)
     #define SSTR_TO_ANSI(x) x
     #define SSTR_TO_UTF8(x) Snowy::StringConvertor::AnsiToUtf8(x)
+    #define PATH_TO_SSTR(x) x.string()
 #endif // defined(SNOWY_CORE_CHAR_WIDE)
 
 /// <summary>
